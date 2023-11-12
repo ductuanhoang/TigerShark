@@ -1,0 +1,13 @@
+FusionOffset.pbi: \
+  D:\2.upwork\84.TigerShark\Code\tigershark_rev42\Fusion\FusionOffset.c \
+  D:\2.upwork\84.TigerShark\Code\tigershark_rev42\Fusion/FusionOffset.h \
+  D:\2.upwork\84.TigerShark\Code\tigershark_rev42\Fusion/FusionMath.h \
+  C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.3\arm\inc\c\math.h \
+  C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.3\arm\inc\c\ycheck.h \
+  C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.3\arm\inc\c\yvals.h \
+  C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.3\arm\inc\c\DLib_Defaults.h \
+  C:\\Program\ Files\ (x86)\\IAR\ Systems\\Embedded\ Workbench\ 8.3\\arm\\inc\\c\\DLib_Config_Full.h \
+  C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.3\arm\inc\c\DLib_Product.h \
+  C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.3\arm\inc\c\DLib_float_setup.h \
+  C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.3\arm\inc\c\stdbool.h \
+  C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.3\arm\inc\c\stdint.h

@@ -1,0 +1,918 @@
+//----------------------------------------------------------------------
+/*EASTRISING TECHNOLOGY CO,.LTD.*/
+// Module       : ER-TFT024-3 
+// Lanuage      : C51 Code
+// Create       : JAVEN
+// Version	: 1.0
+// Date         : Jun-12-2014
+// LCM Drive IC : ILI9341
+// INTERFACE    : 8080_16bit  
+// MCU          : STC89LV52
+// VDD          : 2.8V                 
+//*************************************************************************** 
+#include "main.h"
+
+typedef struct lcd_fmc_address_st {
+    
+    __IO uint16_t lcd_reg;
+    __IO uint16_t lcd_ram;
+} lcd_fmc_address_t;
+
+typedef struct lcd_params_st {
+    
+    uint16_t lcd_width;
+    uint16_t lcd_height;
+    uint16_t lcd_id;
+    uint8_t  lcd_direction;
+    uint16_t wram_cmd;
+    uint16_t set_x_cmd;
+    uint16_t set_y_cmd;
+} lcd_params_t;
+
+#define FMC_LCD_BASE    ((uint32_t)(0x60000000 | 0x00000000))
+#define FMC_LCD         ((lcd_fmc_address_t*)FMC_LCD_BASE)
+
+unsigned char zifu[];
+
+void ILI9341_Initial(void);
+void Write_Cmd_Data(unsigned char x);
+void Write_Cmd(unsigned char DL);
+void Write_Data(unsigned char DH,unsigned char DL);
+void delayms(unsigned int tt);
+void  Write_Data_U16(unsigned int y);
+static void LCD_SetPos(unsigned char x0,unsigned char x1,unsigned  int y0,unsigned int y1);
+void ClearScreen(unsigned int bColor);
+void showzifu(unsigned int x,unsigned int y,unsigned char value,unsigned int dcolor,unsigned  int bgcolor);
+void showzifustr(unsigned int x,unsigned int y,unsigned char *str,unsigned int dcolor,unsigned int bgcolor);
+
+lcd_params_t lcd_params;
+static void lcd_write_cmd(volatile uint16_t cmd)
+{
+    
+    cmd = cmd;      //make compiler happy
+    FMC_LCD->lcd_reg = cmd;
+}
+
+static void lcd_write_data(volatile uint16_t data)
+{
+    
+    data = data;    //make compiler happy
+    FMC_LCD->lcd_ram = data;
+}
+
+
+static uint16_t lcd_read_data(void)
+{
+    
+    volatile uint16_t data;
+    
+    data = FMC_LCD->lcd_ram;
+    
+    return data;
+}
+static void lcd_write_reg(uint16_t reg, uint16_t data)
+{
+    
+    FMC_LCD->lcd_reg = reg;
+    FMC_LCD->lcd_ram = data;
+}
+
+static uint16_t lcd_read_reg(uint16_t reg)
+{
+    
+    uint16_t data;
+    
+    FMC_LCD->lcd_reg = reg;
+    HAL_Delay(1);
+    data = FMC_LCD->lcd_ram;
+    
+    return data;
+}
+static int lcd_read_id(void)
+{
+    
+    /*  Trying to perform ILI9341 controller ID Read process of  */
+    lcd_write_cmd(0XD3);				   
+	lcd_params.lcd_id = lcd_read_data();
+	lcd_params.lcd_id = lcd_read_data();
+	lcd_params.lcd_id = lcd_read_data();				   
+	lcd_params.lcd_id <<= 8;
+	lcd_params.lcd_id |= lcd_read_data();
+    /*  If you read normally , Then return to success  */
+    if (lcd_params.lcd_id == 0x9341) {
+    
+        return 0;
+    }
+    
+    /*  Trying to perform NT35310 controller ID Read process of  */
+    lcd_write_cmd(0XD4);				   
+    lcd_params.lcd_id = lcd_read_data();
+    lcd_params.lcd_id = lcd_read_data();
+    lcd_params.lcd_id = lcd_read_data();
+    lcd_params.lcd_id <<= 8;	 
+    lcd_params.lcd_id |= lcd_read_data();
+    /*  If you read normally , Then return to success  */
+    if (lcd_params.lcd_id == 0x5310) {
+    
+        return 0;
+    }
+    
+    /*  Trying to perform NT35510 controller ID Read process of  */
+    lcd_write_cmd(0XDA00);	
+    lcd_params.lcd_id = lcd_read_data();
+    lcd_write_cmd(0XDB00);	
+    lcd_params.lcd_id = lcd_read_data();
+    lcd_params.lcd_id <<= 8;	 
+    lcd_write_cmd(0XDC00);	
+    lcd_params.lcd_id |= lcd_read_data();
+    /*  If you read normally , Then return to success  */
+    if (lcd_params.lcd_id == 0x8000) {
+    
+        lcd_params.lcd_id = 0x5510;
+        return 0;
+    }
+   
+    /*  drive IC I won't support it  */
+    lcd_params.lcd_id = 0;
+    return -1;
+}
+//===============================================================
+//CLEAR SCREEN
+void ClearScreen(unsigned int bColor)
+{
+ unsigned int i,j;
+ LCD_SetPos(0,239,0,319);//320x240
+ for (i=0;i<320;i++)
+	{
+	
+	   for (j=0;j<240;j++)
+	       Write_Data_U16(bColor);
+	}
+}
+
+
+//===============================================================
+//WRITE COMMAND PARAMETER 
+
+void  Write_Cmd_Data (unsigned char x)
+{
+  FMC_LCD->lcd_ram = 0x00FF & x;
+}
+
+//==============================================================
+//WRITE DATA WORD
+void  Write_Data_U16(unsigned int data)
+{
+    data = data;    //make compiler happy
+    FMC_LCD->lcd_ram = data;
+}
+//=============================================================
+//WRITE COMMAND
+
+void Write_Cmd(unsigned char DL)
+{
+    DL = DL;      //make compiler happy
+    FMC_LCD->lcd_reg = DL;
+}
+
+//===================================================================
+//WRITE DATA CHAR
+
+void Write_Data(unsigned char DH,unsigned char DL)
+{
+  unsigned int tmp = (DL << 8) | DH;
+  FMC_LCD->lcd_ram = tmp;
+}
+
+//============================================================
+//DELAY
+void delayms(unsigned int count)
+{
+HAL_Delay(count);                                                         
+}
+
+
+void LCD_Enter_Sleep(void) 
+{ 
+	Write_Cmd(0x28);     // Display off 
+	Write_Cmd(0x10);     // Enter Sleep mode 
+} 
+ 
+void LCD_Exit_Sleep(void) 
+{ 
+	Write_Cmd(0x11);     // Sleep out 
+	delayms(120); 
+	Write_Cmd(0x29);     // Display on 
+} 
+
+
+//=============================================================
+//LCD Initial
+void ILI9341_Initial(void)
+{	 
+    lcd_read_id();
+    
+	Write_Cmd(0x11);
+	delayms(120);
+
+ 	Write_Cmd(0xCF);   
+	Write_Cmd_Data(0x00); 
+	Write_Cmd_Data(0xc3); 
+	Write_Cmd_Data(0X30); 
+      
+ 	Write_Cmd(0xED);   
+	Write_Cmd_Data(0x64); 
+	Write_Cmd_Data(0x03); 
+	Write_Cmd_Data(0X12); 
+	Write_Cmd_Data(0X81); 
+      
+ 	Write_Cmd(0xE8);   
+	Write_Cmd_Data(0x85); 
+	Write_Cmd_Data(0x10); 
+	Write_Cmd_Data(0x79); 
+      
+ 	Write_Cmd(0xCB);   
+	Write_Cmd_Data(0x39); 
+	Write_Cmd_Data(0x2C); 
+	Write_Cmd_Data(0x00); 
+	Write_Cmd_Data(0x34); 
+	Write_Cmd_Data(0x02); 
+      
+ 	Write_Cmd(0xF7);   
+	Write_Cmd_Data(0x20); 
+      
+ 	Write_Cmd(0xEA);   
+	Write_Cmd_Data(0x00); 
+	Write_Cmd_Data(0x00); 
+      
+ 	Write_Cmd(0xC0);    //Power control 
+	Write_Cmd_Data(0x22);   //VRH[5:0] 
+      
+ 	Write_Cmd(0xC1);    //Power control 
+	Write_Cmd_Data(0x11);   //SAP[2:0];BT[3:0] 
+      
+ 	Write_Cmd(0xC5);    //VCM control 
+	Write_Cmd_Data(0x3d); 
+    //LCD_DataWrite_ILI9341(0x30); 
+	Write_Cmd_Data(0x20); 
+      
+ 	Write_Cmd(0xC7);    //VCM control2 
+    //LCD_DataWrite_ILI9341(0xBD); 
+	Write_Cmd_Data(0xAA); //0xB0 
+    
+ 	Write_Cmd(0x36);    // Memory Access Control 
+	Write_Cmd_Data(0x08); 
+      
+ 	Write_Cmd(0x3A);   
+	Write_Cmd_Data(0x55); 
+    
+ 	Write_Cmd(0xB1);   
+	Write_Cmd_Data(0x00);   
+	Write_Cmd_Data(0x13); 
+      
+ 	Write_Cmd(0xB6);    // Display Function Control 
+	Write_Cmd_Data(0x0A); 
+	Write_Cmd_Data(0xA2); 
+    
+ 	Write_Cmd(0xF6);     
+	Write_Cmd_Data(0x01); 
+	Write_Cmd_Data(0x30); 
+      
+ 	Write_Cmd(0xF2);    // 3Gamma Function Disable 
+	Write_Cmd_Data(0x00); 
+      
+ 	Write_Cmd(0x26);    //Gamma curve selected 
+	Write_Cmd_Data(0x01); 
+      
+ 	Write_Cmd(0xE0);    //Set Gamma 
+	Write_Cmd_Data(0x0F); 
+	Write_Cmd_Data(0x3F); 
+	Write_Cmd_Data(0x2F); 
+	Write_Cmd_Data(0x0C); 
+	Write_Cmd_Data(0x10); 
+	Write_Cmd_Data(0x0A); 
+	Write_Cmd_Data(0x53); 
+	Write_Cmd_Data(0XD5); 
+	Write_Cmd_Data(0x40); 
+	Write_Cmd_Data(0x0A); 
+	Write_Cmd_Data(0x13); 
+	Write_Cmd_Data(0x03); 
+	Write_Cmd_Data(0x08); 
+	Write_Cmd_Data(0x03); 
+	Write_Cmd_Data(0x00); 
+      
+ 	Write_Cmd(0XE1);    //Set Gamma 
+	Write_Cmd_Data(0x00); 
+	Write_Cmd_Data(0x00); 
+	Write_Cmd_Data(0x10); 
+	Write_Cmd_Data(0x03); 
+	Write_Cmd_Data(0x0F); 
+	Write_Cmd_Data(0x05); 
+	Write_Cmd_Data(0x2C); 
+	Write_Cmd_Data(0xA2); 
+	Write_Cmd_Data(0x3F); 
+	Write_Cmd_Data(0x05); 
+	Write_Cmd_Data(0x0E); 
+	Write_Cmd_Data(0x0C); 
+	Write_Cmd_Data(0x37); 
+	Write_Cmd_Data(0x3C); 
+	Write_Cmd_Data(0x0F); 
+      
+ 	Write_Cmd(0x11);    //Exit Sleep 
+	delayms(120);
+ 	Write_Cmd(0x29);    //Display on 
+	delayms(50);
+
+
+
+}
+	    
+void Enter_Sleep(void) 
+{ 
+	Write_Cmd(0x28);     // Display off 
+	Write_Cmd(0x10);     // Enter Sleep mode 
+} 
+ 
+void Exit_Sleep(void) 
+{ 
+	Write_Cmd(0x11);     // Sleep out 
+	delayms(120); 
+	Write_Cmd(0x29);     // Display on 
+}
+	    
+
+
+//===============================================================
+//Define the coordinate
+static void LCD_SetPos(unsigned char x0,unsigned char x1,unsigned int y0,unsigned int y1)
+{
+  unsigned char YSH,YSL,YEH,YEL;
+
+	YSH=y0>>8;
+	YSL=y0;
+
+	YEH=y1>>8;
+	YEL=y1;
+
+ 	Write_Cmd(0x2A);
+	Write_Cmd_Data (0x00);
+	Write_Cmd_Data (x0);
+	Write_Cmd_Data (0x00);
+	Write_Cmd_Data (x1);
+	Write_Cmd(0x2B);
+	Write_Cmd_Data (YSH);
+	Write_Cmd_Data (YSL);
+	Write_Cmd_Data (YEH);
+	Write_Cmd_Data (YEL);
+	Write_Cmd(0x2C);//LCD_WriteCMD(GRAMWR);
+}
+
+//display a character (8 * 12 size)
+//dcolor:character，gbcolor:background color
+void showzifu(unsigned int x,unsigned int y,unsigned char value,unsigned int dcolor,unsigned int bgcolor)	
+{  
+	unsigned char i,j;
+	unsigned char *temp=zifu;    
+    LCD_SetPos(x,x+7,y,y+11); //设置区域      
+	temp+=(value-32)*12;
+	for(j=0;j<12;j++)
+	{
+		for(i=0;i<8;i++)
+		{ 		     
+		 	if((*temp&(1<<(7-i)))!=0)
+			{
+				Write_Data(dcolor>>8,dcolor);
+			} 
+			else
+			{
+				Write_Data(bgcolor>>8,bgcolor);
+			}   
+		}
+		temp++;
+	 }
+}
+
+//display a string (8 * 12 size)
+//dcolor:character，gbcolor:background color
+void showzifustr(unsigned int x,unsigned int y,unsigned char *str,unsigned int dcolor,unsigned int bgcolor)	  
+{  
+	unsigned int x1,y1;
+	x1=x;
+	y1=y;
+	while(*str!='\0')
+	{	
+		showzifu(x1,y1,*str,dcolor,bgcolor);
+		x1+=7;
+		str++;
+	}	
+}
+
+void test_lcd(void)
+{
+	ILI9341_Initial();
+
+	{ClearScreen(0x0000);  //CLEAR DISPLAY
+
+	ClearScreen(0xf800);  //RED
+	delayms(100);
+	ClearScreen(0x07e0);  //GREEN
+	delayms(100);
+	ClearScreen(0x001f);  //BLUE
+	delayms(100);
+	ClearScreen(0xffff);  //WHITE
+	delayms(100);
+
+	ClearScreen(0x0eff);  //CYAN
+	delayms(100);
+	ClearScreen(0xffe0);  //YELLOW
+	delayms(100);
+	ClearScreen(0xf81f);  //PINK  
+	delayms(100);
+
+    	showzifustr(30,5,"EASTRISING TECHNOLOGY ",0,0xffff);	
+    	showzifustr(30,20,"WWW.BUY-DISPLAY",0,0xffff);	
+
+ 	delayms(1000);
+	}
+}
+
+
+//8*12字符
+unsigned char zifu[]={         
+/*--  文字:     --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+
+/*--  文字:  !  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x20,0x20,0x20,0x20,0x20,0x20,0x00,0x20,0x00,0x00,
+
+/*--  文字:  "  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x28,0x50,0x50,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+
+/*--  文字:  #  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x28,0x28,0xFC,0x28,0x50,0xFC,0x50,0x50,0x00,0x00,
+
+/*--  文字:  $  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x20,0x78,0xA8,0xA0,0x60,0x30,0x28,0xA8,0xF0,0x20,0x00,
+
+/*--  文字:  %  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x48,0xA8,0xB0,0x50,0x28,0x34,0x54,0x48,0x00,0x00,
+
+/*--  文字:  &  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x20,0x50,0x50,0x78,0xA8,0xA8,0x90,0x6C,0x00,0x00,
+
+/*--  文字:  '  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x40,0x40,0x80,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+
+/*--  文字:  (  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x04,0x08,0x10,0x10,0x10,0x10,0x10,0x10,0x08,0x04,0x00,
+
+/*--  文字:  )  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x40,0x20,0x10,0x10,0x10,0x10,0x10,0x10,0x20,0x40,0x00,
+
+/*--  文字:  *  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x00,0x20,0xA8,0x70,0x70,0xA8,0x20,0x00,0x00,0x00,
+
+/*--  文字:  +  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x20,0x20,0x20,0xF8,0x20,0x20,0x20,0x00,0x00,0x00,
+
+/*--  文字:  ,  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x40,0x40,0x80,
+
+/*--  文字:  -  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x00,0x00,0x00,0xF8,0x00,0x00,0x00,0x00,0x00,0x00,
+
+/*--  文字:  .  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x40,0x00,0x00,
+
+/*--  文字:  /  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x08,0x10,0x10,0x10,0x20,0x20,0x40,0x40,0x40,0x80,0x00,
+
+/*--  文字:  0  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x70,0x88,0x88,0x88,0x88,0x88,0x88,0x70,0x00,0x00,
+
+/*--  文字:  1  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x20,0x60,0x20,0x20,0x20,0x20,0x20,0x70,0x00,0x00,
+
+/*--  文字:  2  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x70,0x88,0x88,0x10,0x20,0x40,0x80,0xF8,0x00,0x00,
+
+/*--  文字:  3  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x70,0x88,0x08,0x30,0x08,0x08,0x88,0x70,0x00,0x00,
+
+/*--  文字:  4  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x10,0x30,0x50,0x50,0x90,0x78,0x10,0x18,0x00,0x00,
+
+/*--  文字:  5  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0xF8,0x80,0x80,0xF0,0x08,0x08,0x88,0x70,0x00,0x00,
+
+/*--  文字:  6  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x70,0x90,0x80,0xF0,0x88,0x88,0x88,0x70,0x00,0x00,
+
+/*--  文字:  7  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0xF8,0x90,0x10,0x20,0x20,0x20,0x20,0x20,0x00,0x00,
+
+/*--  文字:  8  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x70,0x88,0x88,0x70,0x88,0x88,0x88,0x70,0x00,0x00,
+
+/*--  文字:  9  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x70,0x88,0x88,0x88,0x78,0x08,0x48,0x70,0x00,0x00,
+
+/*--  文字:  :  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x00,0x00,0x20,0x00,0x00,0x00,0x00,0x20,0x00,0x00,
+
+/*--  文字:  ;  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x00,0x00,0x00,0x20,0x00,0x00,0x00,0x20,0x20,0x00,
+
+/*--  文字:  <  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x04,0x08,0x10,0x20,0x40,0x20,0x10,0x08,0x04,0x00,0x00,
+
+/*--  文字:  =  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x00,0x00,0xF8,0x00,0x00,0xF8,0x00,0x00,0x00,0x00,
+
+/*--  文字:  >  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x40,0x20,0x10,0x08,0x04,0x08,0x10,0x20,0x40,0x00,0x00,
+
+/*--  文字:  ?  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x70,0x88,0x88,0x10,0x20,0x20,0x00,0x20,0x00,0x00,
+
+/*--  文字:  @  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x70,0x88,0x98,0xA8,0xA8,0xB8,0x80,0x78,0x00,0x00,
+
+/*--  文字:  A  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x20,0x20,0x30,0x50,0x50,0x78,0x48,0xCC,0x00,0x00,
+
+/*--  文字:  B  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0xF0,0x48,0x48,0x70,0x48,0x48,0x48,0xF0,0x00,0x00,
+
+/*--  文字:  C  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x78,0x88,0x80,0x80,0x80,0x80,0x88,0x70,0x00,0x00,
+
+/*--  文字:  D  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0xF0,0x48,0x48,0x48,0x48,0x48,0x48,0xF0,0x00,0x00,
+
+/*--  文字:  E  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0xF8,0x48,0x50,0x70,0x50,0x40,0x48,0xF8,0x00,0x00,
+
+/*--  文字:  F  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0xF8,0x48,0x50,0x70,0x50,0x40,0x40,0xE0,0x00,0x00,
+
+/*--  文字:  G  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x38,0x48,0x80,0x80,0x9C,0x88,0x48,0x30,0x00,0x00,
+
+/*--  文字:  H  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0xCC,0x48,0x48,0x78,0x48,0x48,0x48,0xCC,0x00,0x00,
+
+/*--  文字:  I  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0xF8,0x20,0x20,0x20,0x20,0x20,0x20,0xF8,0x00,0x00,
+
+/*--  文字:  J  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x7C,0x10,0x10,0x10,0x10,0x10,0x10,0x90,0xE0,0x00,
+
+/*--  文字:  K  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0xEC,0x48,0x50,0x60,0x50,0x50,0x48,0xEC,0x00,0x00,
+
+/*--  文字:  L  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0xE0,0x40,0x40,0x40,0x40,0x40,0x44,0xFC,0x00,0x00,
+
+/*--  文字:  M  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0xD8,0xD8,0xD8,0xD8,0xA8,0xA8,0xA8,0xA8,0x00,0x00,
+
+/*--  文字:  N  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0xDC,0x48,0x68,0x68,0x58,0x58,0x48,0xE8,0x00,0x00,
+
+/*--  文字:  O  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x70,0x88,0x88,0x88,0x88,0x88,0x88,0x70,0x00,0x00,
+
+/*--  文字:  P  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0xF0,0x48,0x48,0x70,0x40,0x40,0x40,0xE0,0x00,0x00,
+
+/*--  文字:  Q  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x70,0x88,0x88,0x88,0x88,0xE8,0x98,0x70,0x18,0x00,
+
+/*--  文字:  R  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0xF0,0x48,0x48,0x70,0x50,0x48,0x48,0xEC,0x00,0x00,
+
+/*--  文字:  S  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x78,0x88,0x80,0x60,0x10,0x08,0x88,0xF0,0x00,0x00,
+
+/*--  文字:  T  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0xF8,0xA8,0x20,0x20,0x20,0x20,0x20,0x70,0x00,0x00,
+
+/*--  文字:  U  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0xCC,0x48,0x48,0x48,0x48,0x48,0x48,0x30,0x00,0x00,
+
+/*--  文字:  V  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0xCC,0x48,0x48,0x50,0x50,0x30,0x20,0x20,0x00,0x00,
+
+/*--  文字:  W  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0xA8,0xA8,0xA8,0x70,0x50,0x50,0x50,0x50,0x00,0x00,
+
+/*--  文字:  X  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0xD8,0x50,0x50,0x20,0x20,0x50,0x50,0xD8,0x00,0x00,
+
+/*--  文字:  Y  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0xD8,0x50,0x50,0x20,0x20,0x20,0x20,0x70,0x00,0x00,
+
+/*--  文字:  Z  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0xF8,0x90,0x10,0x20,0x20,0x40,0x48,0xF8,0x00,0x00,
+
+/*--  文字:  [  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x38,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x38,0x00,
+
+/*--  文字:  \  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x40,0x40,0x40,0x20,0x20,0x10,0x10,0x10,0x08,0x00,0x00,
+
+/*--  文字:  ]  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x70,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x70,0x00,
+
+/*--  文字:  ^  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x20,0x50,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+
+/*--  文字:  _  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xFC,
+
+/*--  文字:  `  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x20,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+
+/*--  文字:  a  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x00,0x00,0x00,0x30,0x48,0x38,0x48,0x3C,0x00,0x00,
+
+/*--  文字:  b  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0xC0,0x40,0x40,0x70,0x48,0x48,0x48,0x70,0x00,0x00,
+
+/*--  文字:  c  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x00,0x00,0x00,0x38,0x48,0x40,0x40,0x38,0x00,0x00,
+
+/*--  文字:  d  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x18,0x08,0x08,0x38,0x48,0x48,0x48,0x3C,0x00,0x00,
+
+/*--  文字:  e  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x00,0x00,0x00,0x30,0x48,0x78,0x40,0x38,0x00,0x00,
+
+/*--  文字:  f  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x1C,0x20,0x20,0x78,0x20,0x20,0x20,0x78,0x00,0x00,
+
+/*--  文字:  g  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x00,0x00,0x00,0x3C,0x48,0x30,0x40,0x78,0x44,0x38,
+
+/*--  文字:  h  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0xC0,0x40,0x40,0x70,0x48,0x48,0x48,0xEC,0x00,0x00,
+
+/*--  文字:  i  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x20,0x00,0x00,0x60,0x20,0x20,0x20,0x70,0x00,0x00,
+
+/*--  文字:  j  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x10,0x00,0x00,0x30,0x10,0x10,0x10,0x10,0x10,0xE0,
+
+/*--  文字:  k  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0xC0,0x40,0x40,0x5C,0x50,0x70,0x48,0xEC,0x00,0x00,
+
+/*--  文字:  l  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0xE0,0x20,0x20,0x20,0x20,0x20,0x20,0xF8,0x00,0x00,
+
+/*--  文字:  m  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x00,0x00,0x00,0xF0,0xA8,0xA8,0xA8,0xA8,0x00,0x00,
+
+/*--  文字:  n  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x00,0x00,0x00,0xF0,0x48,0x48,0x48,0xEC,0x00,0x00,
+
+/*--  文字:  o  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x00,0x00,0x00,0x30,0x48,0x48,0x48,0x30,0x00,0x00,
+
+/*--  文字:  p  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x00,0x00,0x00,0xF0,0x48,0x48,0x48,0x70,0x40,0xE0,
+
+/*--  文字:  q  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x00,0x00,0x00,0x38,0x48,0x48,0x48,0x38,0x08,0x1C,
+
+/*--  文字:  r  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x00,0x00,0x00,0xD8,0x60,0x40,0x40,0xE0,0x00,0x00,
+
+/*--  文字:  s  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x00,0x00,0x00,0x78,0x40,0x30,0x08,0x78,0x00,0x00,
+
+/*--  文字:  t  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x00,0x20,0x20,0x70,0x20,0x20,0x20,0x18,0x00,0x00,
+
+/*--  文字:  u  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x00,0x00,0x00,0xD8,0x48,0x48,0x48,0x3C,0x00,0x00,
+
+/*--  文字:  v  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x00,0x00,0x00,0xEC,0x48,0x50,0x30,0x20,0x00,0x00,
+
+/*--  文字:  w  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x00,0x00,0x00,0xA8,0xA8,0x70,0x50,0x50,0x00,0x00,
+
+/*--  文字:  x  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x00,0x00,0x00,0xD8,0x50,0x20,0x50,0xD8,0x00,0x00,
+
+/*--  文字:  y  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x00,0x00,0x00,0xEC,0x48,0x50,0x30,0x20,0x20,0xC0,
+
+/*--  文字:  z  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x00,0x00,0x00,0x00,0x78,0x10,0x20,0x20,0x78,0x00,0x00,
+
+/*--  文字:  {  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x18,0x10,0x10,0x10,0x20,0x10,0x10,0x10,0x10,0x18,0x00,
+
+/*--  文字:  |  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,
+
+/*--  文字:  }  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x00,0x60,0x20,0x20,0x20,0x10,0x20,0x20,0x20,0x20,0x60,0x00,
+
+/*--  文字:  ~  --*/
+/*--  宋体9;  此字体下对应的点阵为：宽x高=6x12   --*/
+/*--  宽度不是8的倍数，现调整为：宽度x高度=8x12  --*/
+0x40,0xA4,0x18,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+
+    
+};

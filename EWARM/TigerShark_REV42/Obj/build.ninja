@@ -1,0 +1,208 @@
+#Generating source browse information for project TigerShark_REV42
+
+
+#Abbreviations
+cc = C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 8.3\common\bin\SourceIndexer.exe
+ll = C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 8.3\common\bin\PbdLink.exe
+bd = C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 8.3\common\bin\makeBrowseData.exe
+
+
+
+#Rules
+rule index
+  depfile = $out.dep
+  command = $cc -out=$out -f $in
+rule link
+  command = $ll -M $out $in
+rule browsedata
+  command = $bd $in -output  $out
+
+
+
+#Build steps
+build adc_process.pbi : index adc_process.xcl
+build bmx160.pbi : index bmx160.xcl
+build button_process.pbi : index button_process.xcl
+build compass.pbi : index compass.xcl
+build crc16.pbi : index crc16.xcl
+build deco.pbi : index deco.xcl
+build DFRobot_BMX160.pbi : index DFRobot_BMX160.xcl
+build diva_process.pbi : index diva_process.xcl
+build flash_process.pbi : index flash_process.xcl
+build fn3161h.pbi : index fn3161h.xcl
+build lcd_ex.pbi : index lcd_ex.xcl
+build main_process.pbi : index main_process.xcl
+build ms5837.pbi : index ms5837.xcl
+build power_management.pbi : index power_management.xcl
+build sensors_calibration.pbi : index sensors_calibration.xcl
+build spi_ffs.pbi : index spi_ffs.xcl
+build veml7700.pbi : index veml7700.xcl
+build W25Qx.pbi : index W25Qx.xcl
+build FusionAhrs.pbi : index FusionAhrs.xcl
+build FusionCompass.pbi : index FusionCompass.xcl
+build FusionOffset.pbi : index FusionOffset.xcl
+build lv_anim.pbi : index lv_anim.xcl
+build lv_arc.pbi : index lv_arc.xcl
+build lv_area.pbi : index lv_area.xcl
+build lv_async.pbi : index lv_async.xcl
+build lv_bar.pbi : index lv_bar.xcl
+build lv_bidi.pbi : index lv_bidi.xcl
+build lv_btn.pbi : index lv_btn.xcl
+build lv_btnmatrix.pbi : index lv_btnmatrix.xcl
+build lv_calendar.pbi : index lv_calendar.xcl
+build lv_canvas.pbi : index lv_canvas.xcl
+build lv_chart.pbi : index lv_chart.xcl
+build lv_checkbox.pbi : index lv_checkbox.xcl
+build lv_color.pbi : index lv_color.xcl
+build lv_cont.pbi : index lv_cont.xcl
+build lv_cpicker.pbi : index lv_cpicker.xcl
+build lv_debug.pbi : index lv_debug.xcl
+build lv_disp.pbi : index lv_disp.xcl
+build lv_draw_arc.pbi : index lv_draw_arc.xcl
+build lv_draw_blend.pbi : index lv_draw_blend.xcl
+build lv_draw_img.pbi : index lv_draw_img.xcl
+build lv_draw_label.pbi : index lv_draw_label.xcl
+build lv_draw_line.pbi : index lv_draw_line.xcl
+build lv_draw_mask.pbi : index lv_draw_mask.xcl
+build lv_draw_rect.pbi : index lv_draw_rect.xcl
+build lv_draw_triangle.pbi : index lv_draw_triangle.xcl
+build lv_dropdown.pbi : index lv_dropdown.xcl
+build lv_font.pbi : index lv_font.xcl
+build lv_font_dejavu_16_persian_hebrew.pbi : index lv_font_dejavu_16_persian_hebrew.xcl
+build lv_font_fmt_txt.pbi : index lv_font_fmt_txt.xcl
+build lv_font_loader.pbi : index lv_font_loader.xcl
+build lv_font_montserrat_16.pbi : index lv_font_montserrat_16.xcl
+build lv_font_montserrat_18.pbi : index lv_font_montserrat_18.xcl
+build lv_font_montserrat_30.pbi : index lv_font_montserrat_30.xcl
+build lv_font_montserrat_40.pbi : index lv_font_montserrat_40.xcl
+build lv_font_unscii_16.pbi : index lv_font_unscii_16.xcl
+build lv_font_unscii_8.pbi : index lv_font_unscii_8.xcl
+build lv_fs.pbi : index lv_fs.xcl
+build lv_gauge.pbi : index lv_gauge.xcl
+build lv_gc.pbi : index lv_gc.xcl
+build lv_gpu_nxp_pxp.pbi : index lv_gpu_nxp_pxp.xcl
+build lv_gpu_nxp_pxp_osa.pbi : index lv_gpu_nxp_pxp_osa.xcl
+build lv_gpu_nxp_vglite.pbi : index lv_gpu_nxp_vglite.xcl
+build lv_gpu_stm32_dma2d.pbi : index lv_gpu_stm32_dma2d.xcl
+build lv_group.pbi : index lv_group.xcl
+build lv_hal_disp.pbi : index lv_hal_disp.xcl
+build lv_hal_indev.pbi : index lv_hal_indev.xcl
+build lv_hal_tick.pbi : index lv_hal_tick.xcl
+build lv_img.pbi : index lv_img.xcl
+build lv_img_buf.pbi : index lv_img_buf.xcl
+build lv_img_cache.pbi : index lv_img_cache.xcl
+build lv_img_decoder.pbi : index lv_img_decoder.xcl
+build lv_imgbtn.pbi : index lv_imgbtn.xcl
+build lv_indev.pbi : index lv_indev.xcl
+build lv_keyboard.pbi : index lv_keyboard.xcl
+build lv_label.pbi : index lv_label.xcl
+build lv_led.pbi : index lv_led.xcl
+build lv_line.pbi : index lv_line.xcl
+build lv_linemeter.pbi : index lv_linemeter.xcl
+build lv_list.pbi : index lv_list.xcl
+build lv_ll.pbi : index lv_ll.xcl
+build lv_log.pbi : index lv_log.xcl
+build lv_math.pbi : index lv_math.xcl
+build lv_mem.pbi : index lv_mem.xcl
+build lv_msgbox.pbi : index lv_msgbox.xcl
+build lv_obj.pbi : index lv_obj.xcl
+build lv_objmask.pbi : index lv_objmask.xcl
+build lv_objx_templ.pbi : index lv_objx_templ.xcl
+build lv_page.pbi : index lv_page.xcl
+build lv_printf.pbi : index lv_printf.xcl
+build lv_refr.pbi : index lv_refr.xcl
+build lv_roller.pbi : index lv_roller.xcl
+build lv_slider.pbi : index lv_slider.xcl
+build lv_spinbox.pbi : index lv_spinbox.xcl
+build lv_spinner.pbi : index lv_spinner.xcl
+build lv_style.pbi : index lv_style.xcl
+build lv_switch.pbi : index lv_switch.xcl
+build lv_table.pbi : index lv_table.xcl
+build lv_tabview.pbi : index lv_tabview.xcl
+build lv_task.pbi : index lv_task.xcl
+build lv_templ.pbi : index lv_templ.xcl
+build lv_textarea.pbi : index lv_textarea.xcl
+build lv_theme.pbi : index lv_theme.xcl
+build lv_theme_empty.pbi : index lv_theme_empty.xcl
+build lv_theme_material.pbi : index lv_theme_material.xcl
+build lv_theme_mono.pbi : index lv_theme_mono.xcl
+build lv_theme_template.pbi : index lv_theme_template.xcl
+build lv_tileview.pbi : index lv_tileview.xcl
+build lv_txt.pbi : index lv_txt.xcl
+build lv_txt_ap.pbi : index lv_txt_ap.xcl
+build lv_utils.pbi : index lv_utils.xcl
+build lv_win.pbi : index lv_win.xcl
+build spiffs_cache.pbi : index spiffs_cache.xcl
+build spiffs_check.pbi : index spiffs_check.xcl
+build spiffs_gc.pbi : index spiffs_gc.xcl
+build spiffs_hydrogen.pbi : index spiffs_hydrogen.xcl
+build spiffs_nucleus.pbi : index spiffs_nucleus.xcl
+build lv_port_disp_template.pbi : index lv_port_disp_template.xcl
+build ui_compass.pbi : index ui_compass.xcl
+build ui_control.pbi : index ui_control.xcl
+build ui_diagnotics.pbi : index ui_diagnotics.xcl
+build ui_dialog.pbi : index ui_dialog.xcl
+build ui_func_com.pbi : index ui_func_com.xcl
+build ui_img_storage.pbi : index ui_img_storage.xcl
+build ui_main.pbi : index ui_main.xcl
+build ui_menu.pbi : index ui_menu.xcl
+build ui_splash.pbi : index ui_splash.xcl
+build adc.pbi : index adc.xcl
+build can.pbi : index can.xcl
+build dma.pbi : index dma.xcl
+build fmc.pbi : index fmc.xcl
+build gpio.pbi : index gpio.xcl
+build i2c.pbi : index i2c.xcl
+build main.pbi : index main.xcl
+build rtc.pbi : index rtc.xcl
+build spi.pbi : index spi.xcl
+build stm32l4xx_hal_msp.pbi : index stm32l4xx_hal_msp.xcl
+build stm32l4xx_it.pbi : index stm32l4xx_it.xcl
+build tim.pbi : index tim.xcl
+build usart.pbi : index usart.xcl
+build system_stm32l4xx.pbi : index system_stm32l4xx.xcl
+build stm32l4xx_hal.pbi : index stm32l4xx_hal.xcl
+build stm32l4xx_hal_adc.pbi : index stm32l4xx_hal_adc.xcl
+build stm32l4xx_hal_adc_ex.pbi : index stm32l4xx_hal_adc_ex.xcl
+build stm32l4xx_hal_can.pbi : index stm32l4xx_hal_can.xcl
+build stm32l4xx_hal_cortex.pbi : index stm32l4xx_hal_cortex.xcl
+build stm32l4xx_hal_dma.pbi : index stm32l4xx_hal_dma.xcl
+build stm32l4xx_hal_dma_ex.pbi : index stm32l4xx_hal_dma_ex.xcl
+build stm32l4xx_hal_exti.pbi : index stm32l4xx_hal_exti.xcl
+build stm32l4xx_hal_flash.pbi : index stm32l4xx_hal_flash.xcl
+build stm32l4xx_hal_flash_ex.pbi : index stm32l4xx_hal_flash_ex.xcl
+build stm32l4xx_hal_flash_ramfunc.pbi : index stm32l4xx_hal_flash_ramfunc.xcl
+build stm32l4xx_hal_gpio.pbi : index stm32l4xx_hal_gpio.xcl
+build stm32l4xx_hal_i2c.pbi : index stm32l4xx_hal_i2c.xcl
+build stm32l4xx_hal_i2c_ex.pbi : index stm32l4xx_hal_i2c_ex.xcl
+build stm32l4xx_hal_pwr.pbi : index stm32l4xx_hal_pwr.xcl
+build stm32l4xx_hal_pwr_ex.pbi : index stm32l4xx_hal_pwr_ex.xcl
+build stm32l4xx_hal_rcc.pbi : index stm32l4xx_hal_rcc.xcl
+build stm32l4xx_hal_rcc_ex.pbi : index stm32l4xx_hal_rcc_ex.xcl
+build stm32l4xx_hal_rtc.pbi : index stm32l4xx_hal_rtc.xcl
+build stm32l4xx_hal_rtc_ex.pbi : index stm32l4xx_hal_rtc_ex.xcl
+build stm32l4xx_hal_spi.pbi : index stm32l4xx_hal_spi.xcl
+build stm32l4xx_hal_spi_ex.pbi : index stm32l4xx_hal_spi_ex.xcl
+build stm32l4xx_hal_sram.pbi : index stm32l4xx_hal_sram.xcl
+build stm32l4xx_hal_tim.pbi : index stm32l4xx_hal_tim.xcl
+build stm32l4xx_hal_tim_ex.pbi : index stm32l4xx_hal_tim_ex.xcl
+build stm32l4xx_hal_uart.pbi : index stm32l4xx_hal_uart.xcl
+build stm32l4xx_hal_uart_ex.pbi : index stm32l4xx_hal_uart_ex.xcl
+build stm32l4xx_ll_fmc.pbi : index stm32l4xx_ll_fmc.xcl
+build TigerShark_REV42_part0.pbi : link adc_process.pbi bmx160.pbi button_process.pbi compass.pbi crc16.pbi deco.pbi DFRobot_BMX160.pbi diva_process.pbi flash_process.pbi fn3161h.pbi lcd_ex.pbi main_process.pbi ms5837.pbi
+build TigerShark_REV42_part1.pbi : link power_management.pbi sensors_calibration.pbi spi_ffs.pbi veml7700.pbi W25Qx.pbi FusionAhrs.pbi FusionCompass.pbi FusionOffset.pbi lv_anim.pbi lv_arc.pbi lv_area.pbi lv_async.pbi lv_bar.pbi
+build TigerShark_REV42_part2.pbi : link lv_bidi.pbi lv_btn.pbi lv_btnmatrix.pbi lv_calendar.pbi lv_canvas.pbi lv_chart.pbi lv_checkbox.pbi lv_color.pbi lv_cont.pbi lv_cpicker.pbi lv_debug.pbi lv_disp.pbi lv_draw_arc.pbi
+build TigerShark_REV42_part3.pbi : link lv_draw_blend.pbi lv_draw_img.pbi lv_draw_label.pbi lv_draw_line.pbi lv_draw_mask.pbi lv_draw_rect.pbi lv_draw_triangle.pbi lv_dropdown.pbi lv_font.pbi lv_font_dejavu_16_persian_hebrew.pbi lv_font_fmt_txt.pbi lv_font_loader.pbi lv_font_montserrat_16.pbi
+build TigerShark_REV42_part4.pbi : link lv_font_montserrat_18.pbi lv_font_montserrat_30.pbi lv_font_montserrat_40.pbi lv_font_unscii_16.pbi lv_font_unscii_8.pbi lv_fs.pbi lv_gauge.pbi lv_gc.pbi lv_gpu_nxp_pxp.pbi lv_gpu_nxp_pxp_osa.pbi lv_gpu_nxp_vglite.pbi lv_gpu_stm32_dma2d.pbi lv_group.pbi
+build TigerShark_REV42_part5.pbi : link lv_hal_disp.pbi lv_hal_indev.pbi lv_hal_tick.pbi lv_img.pbi lv_img_buf.pbi lv_img_cache.pbi lv_img_decoder.pbi lv_imgbtn.pbi lv_indev.pbi lv_keyboard.pbi lv_label.pbi lv_led.pbi lv_line.pbi
+build TigerShark_REV42_part6.pbi : link lv_linemeter.pbi lv_list.pbi lv_ll.pbi lv_log.pbi lv_math.pbi lv_mem.pbi lv_msgbox.pbi lv_obj.pbi lv_objmask.pbi lv_objx_templ.pbi lv_page.pbi lv_printf.pbi lv_refr.pbi
+build TigerShark_REV42_part7.pbi : link lv_roller.pbi lv_slider.pbi lv_spinbox.pbi lv_spinner.pbi lv_style.pbi lv_switch.pbi lv_table.pbi lv_tabview.pbi lv_task.pbi lv_templ.pbi lv_textarea.pbi lv_theme.pbi lv_theme_empty.pbi
+build TigerShark_REV42_part8.pbi : link lv_theme_material.pbi lv_theme_mono.pbi lv_theme_template.pbi lv_tileview.pbi lv_txt.pbi lv_txt_ap.pbi lv_utils.pbi lv_win.pbi spiffs_cache.pbi spiffs_check.pbi spiffs_gc.pbi spiffs_hydrogen.pbi spiffs_nucleus.pbi
+build TigerShark_REV42_part9.pbi : link lv_port_disp_template.pbi ui_compass.pbi ui_control.pbi ui_diagnotics.pbi ui_dialog.pbi ui_func_com.pbi ui_img_storage.pbi ui_main.pbi ui_menu.pbi ui_splash.pbi adc.pbi can.pbi dma.pbi
+build TigerShark_REV42_part10.pbi : link fmc.pbi gpio.pbi i2c.pbi main.pbi rtc.pbi spi.pbi stm32l4xx_hal_msp.pbi stm32l4xx_it.pbi tim.pbi usart.pbi system_stm32l4xx.pbi stm32l4xx_hal.pbi stm32l4xx_hal_adc.pbi
+build TigerShark_REV42_part11.pbi : link stm32l4xx_hal_adc_ex.pbi stm32l4xx_hal_can.pbi stm32l4xx_hal_cortex.pbi stm32l4xx_hal_dma.pbi stm32l4xx_hal_dma_ex.pbi stm32l4xx_hal_exti.pbi stm32l4xx_hal_flash.pbi stm32l4xx_hal_flash_ex.pbi stm32l4xx_hal_flash_ramfunc.pbi stm32l4xx_hal_gpio.pbi stm32l4xx_hal_i2c.pbi stm32l4xx_hal_i2c_ex.pbi stm32l4xx_hal_pwr.pbi
+build TigerShark_REV42_part12.pbi : link stm32l4xx_hal_pwr_ex.pbi stm32l4xx_hal_rcc.pbi stm32l4xx_hal_rcc_ex.pbi stm32l4xx_hal_rtc.pbi stm32l4xx_hal_rtc_ex.pbi stm32l4xx_hal_spi.pbi stm32l4xx_hal_spi_ex.pbi stm32l4xx_hal_sram.pbi stm32l4xx_hal_tim.pbi stm32l4xx_hal_tim_ex.pbi stm32l4xx_hal_uart.pbi stm32l4xx_hal_uart_ex.pbi stm32l4xx_ll_fmc.pbi
+build TigerShark_REV42.pbd : link TigerShark_REV42_part0.pbi TigerShark_REV42_part1.pbi TigerShark_REV42_part2.pbi TigerShark_REV42_part3.pbi TigerShark_REV42_part4.pbi TigerShark_REV42_part5.pbi TigerShark_REV42_part6.pbi TigerShark_REV42_part7.pbi TigerShark_REV42_part8.pbi TigerShark_REV42_part9.pbi TigerShark_REV42_part10.pbi TigerShark_REV42_part11.pbi TigerShark_REV42_part12.pbi
+build TigerShark_REV42.pbw : browsedata TigerShark_REV42.pbd
+
+
