@@ -1,7 +1,7 @@
 spiffs_gc.pbi: \
-  D:\2.upwork\84.TigerShark\Code\tigershark_rev42\spiffs\spiffs_gc.c \
-  D:\2.upwork\84.TigerShark\Code\tigershark_rev42\spiffs/spiffs.h \
-  D:\2.upwork\84.TigerShark\Code\tigershark_rev42\spiffs/spiffs_config.h \
+  D:\2.upwork\84.TigerShark\Code\TigerShark\spiffs\spiffs_gc.c \
+  D:\2.upwork\84.TigerShark\Code\TigerShark\spiffs/spiffs.h \
+  D:\2.upwork\84.TigerShark\Code\TigerShark\spiffs/spiffs_config.h \
   C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.3\arm\inc\c\stdint.h \
   C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.3\arm\inc\c\ycheck.h \
   C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.3\arm\inc\c\yvals.h \
@@ -15,4 +15,4 @@ spiffs_gc.pbi: \
   C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.3\arm\inc\c\stdlib.h \
   C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.3\arm\inc\c\DLib_Product_stdlib.h \
   C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.3\arm\inc\c\stdio.h \
-  D:\2.upwork\84.TigerShark\Code\tigershark_rev42\spiffs/spiffs_nucleus.h
+  D:\2.upwork\84.TigerShark\Code\TigerShark\spiffs/spiffs_nucleus.h

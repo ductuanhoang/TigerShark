@@ -23,9 +23,9 @@
 
 if ($debugfile -eq "")
 {
-& "C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.3\common\bin\cspybat" -f "D:\2.upwork\84.TigerShark\Code\tigershark_rev42\EWARM\settings\TigerShark_REV42.TigerShark_REV42.general.xcl" --backend -f "D:\2.upwork\84.TigerShark\Code\tigershark_rev42\EWARM\settings\TigerShark_REV42.TigerShark_REV42.driver.xcl" 
+& "C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.3\common\bin\cspybat" -f "D:\2.upwork\84.TigerShark\Code\TigerShark\EWARM\settings\TigerShark_REV42.TigerShark_REV42.general.xcl" --backend -f "D:\2.upwork\84.TigerShark\Code\TigerShark\EWARM\settings\TigerShark_REV42.TigerShark_REV42.driver.xcl" 
 }
 else
 {
-& "C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.3\common\bin\cspybat" -f "D:\2.upwork\84.TigerShark\Code\tigershark_rev42\EWARM\settings\TigerShark_REV42.TigerShark_REV42.general.xcl" --debug_file=$debugfile --backend -f "D:\2.upwork\84.TigerShark\Code\tigershark_rev42\EWARM\settings\TigerShark_REV42.TigerShark_REV42.driver.xcl" 
+& "C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.3\common\bin\cspybat" -f "D:\2.upwork\84.TigerShark\Code\TigerShark\EWARM\settings\TigerShark_REV42.TigerShark_REV42.general.xcl" --debug_file=$debugfile --backend -f "D:\2.upwork\84.TigerShark\Code\TigerShark\EWARM\settings\TigerShark_REV42.TigerShark_REV42.driver.xcl" 
 }

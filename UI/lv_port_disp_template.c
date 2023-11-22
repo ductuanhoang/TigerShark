@@ -76,17 +76,37 @@ void lv_port_disp_init(void)
 
     /* Example for 2) */       
     #define draw_buf_2_1      (lv_color_t*)(SRAM2_BASE)
-    #define draw_buf_2_2      (lv_color_t*)(SRAM2_BASE +0x4000)
-    static lv_disp_buf_t draw_buf_dsc_2;
+    #define draw_buf_2_2      (lv_color_t*)(SRAM2_BASE +0x5000)
+    static lv_disp_draw_buf_t draw_buf_dsc_2;
     //static lv_color_t draw_buf_2_1[LV_HOR_RES_MAX * 32];                        /*A buffer for 32 rows*/
    // static lv_color_t draw_buf_2_2[LV_HOR_RES_MAX * 32];                        /*An other buffer for 32 rows*/
-    lv_disp_buf_init(&draw_buf_dsc_2, draw_buf_2_1, draw_buf_2_2, LV_HOR_RES_MAX * 32);   /*Initialize the display buffer*/
+    lv_disp_draw_buf_init(&draw_buf_dsc_2, draw_buf_2_1, draw_buf_2_2, LV_HOR_RES_MAX * 32);   /*Initialize the display buffer*/
 
     /* Example for 3) */
     // static lv_disp_buf_t draw_buf_dsc_3;
     // static lv_color_t draw_buf_3_1[LV_HOR_RES_MAX * LV_VER_RES_MAX];            /*A screen sized buffer*/
     // static lv_color_t draw_buf_3_2[LV_HOR_RES_MAX * LV_VER_RES_MAX];            /*An other screen sized buffer*/
     // lv_disp_buf_init(&draw_buf_dsc_3, draw_buf_3_1, draw_buf_3_2, LV_HOR_RES_MAX * LV_VER_RES_MAX);   /*Initialize the display buffer*/
+
+    /* Example for 1) */
+    // static lv_disp_draw_buf_t draw_buf_dsc_1;
+    // static lv_color_t buf_1[LV_HOR_RES_MAX * 10];                          /*A buffer for 10 rows*/
+    // lv_disp_draw_buf_init(&draw_buf_dsc_1, buf_1, NULL, LV_HOR_RES_MAX * 10);   /*Initialize the display buffer*/
+
+    // /* Example for 2) */
+    // static lv_disp_draw_buf_t draw_buf_dsc_2;
+    // static lv_color_t buf_2_1[LV_HOR_RES_MAX * 10];                        /*A buffer for 10 rows*/
+    // static lv_color_t buf_2_2[LV_HOR_RES_MAX * 10];                        /*An other buffer for 10 rows*/
+    // lv_disp_draw_buf_init(&draw_buf_dsc_2, buf_2_1, buf_2_2, LV_HOR_RES_MAX * 10);   /*Initialize the display buffer*/
+
+    /* Example for 3) also set disp_drv.full_refresh = 1 below*/
+    // static lv_disp_draw_buf_t draw_buf_dsc_3;
+    // static lv_color_t buf_3_1[LV_HOR_RES_MAX * 32];            /*A screen sized buffer*/
+    // static lv_color_t buf_3_2[LV_HOR_RES_MAX * 32];            /*Another screen sized buffer*/
+    
+    // lv_disp_draw_buf_init(&draw_buf_dsc_3, buf_3_1, buf_3_2,
+    //                       LV_VER_RES_MAX * LV_VER_RES_MAX);   /*Initialize the display buffer*/
+
 
     /*-----------------------------------
      * Register the display in LVGL
@@ -96,22 +116,24 @@ void lv_port_disp_init(void)
     lv_disp_drv_init(&disp_drv);                    /*Basic initialization*/
 
     /*Set up the functions to access to your display*/
+    /*Used to copy the buffer's content to the display*/
+    disp_drv.flush_cb = disp_flush;
+    // disp_drv.set_px_cb = 0;
+
+    /*Set a display buffer*/
+    disp_drv.draw_buf = &draw_buf_dsc_2;
 
     /*Set the resolution of the display*/
     disp_drv.hor_res = LV_HOR_RES_MAX;
     disp_drv.ver_res = LV_VER_RES_MAX;
-    disp_drv.rotated = LV_DISP_ROT_NONE;
-    disp_drv.sw_rotate = 1;
+    // disp_drv.rotated = LV_DISP_ROT_NONE;
+    disp_drv.sw_rotate = 0;
+    disp_drv.rotated = LV_DISP_ROT_90;
 
-    /*Used to copy the buffer's content to the display*/
-    disp_drv.flush_cb = disp_flush;
-    disp_drv.set_px_cb = 0;
-
-    /*Set a display buffer*/
-    disp_drv.buffer = &draw_buf_dsc_2;
 
     /*Finally register the driver*/
-    lv_disp_drv_register(&disp_drv);
+    lv_disp_t * disp;
+    disp = lv_disp_drv_register(&disp_drv);
 }
 
 /**********************

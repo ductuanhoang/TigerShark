@@ -1,0 +1,20 @@
+{
+    "files.associations": {
+        "ui_func_com.h": "c",
+        "main_process.h": "c",
+        "bit": "c",
+        "compare": "c",
+        "cstddef": "c",
+        "limits": "c",
+        "type_traits": "c",
+        "vector": "c",
+        "xutility": "c",
+        "ui_main.h": "c",
+        "lv_conf_internal.h": "c",
+        "fn3161h.h": "c",
+        "lvgl.h": "c",
+        "lv_timer.h": "c",
+        "lv_log.h": "c",
+        "lv_port_disp_template.h": "c"
+    }
+}

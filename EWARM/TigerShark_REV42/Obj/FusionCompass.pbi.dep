@@ -1,7 +1,7 @@
 FusionCompass.pbi: \
-  D:\2.upwork\84.TigerShark\Code\tigershark_rev42\Fusion\FusionCompass.c \
-  D:\2.upwork\84.TigerShark\Code\tigershark_rev42\Fusion/FusionCompass.h \
-  D:\2.upwork\84.TigerShark\Code\tigershark_rev42\Fusion/FusionMath.h \
+  D:\2.upwork\84.TigerShark\Code\TigerShark\Fusion\FusionCompass.c \
+  D:\2.upwork\84.TigerShark\Code\TigerShark\Fusion/FusionCompass.h \
+  D:\2.upwork\84.TigerShark\Code\TigerShark\Fusion/FusionMath.h \
   C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.3\arm\inc\c\math.h \
   C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.3\arm\inc\c\ycheck.h \
   C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.3\arm\inc\c\yvals.h \
